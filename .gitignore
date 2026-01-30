@@ -56,4 +56,8 @@ cdk.out/
 *.pt
 *.pth
 *.onnx
+*.npy*.pkl
+*.model
 *.npy
+__pycache__/
+.ipynb_checkpoints/
