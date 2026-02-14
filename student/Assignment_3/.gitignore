@@ -1,5 +1,4 @@
 *.pth
-*.png
 *.model
 *.npy
 __pycache__
