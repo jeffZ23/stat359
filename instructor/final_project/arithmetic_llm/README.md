@@ -54,12 +54,37 @@ The data loader processes JSONL data differently based on training mode:
 
 Here's a complete workflow from corpus generation to interactive solving:
 
+Run commands from the repository root (`stat359/`) and prefer the canonical form:
+- `poetry run python -m instructor.final_project.arithmetic_llm.<module>`
+
+Shell-safe command syntax:
+- Bash/zsh multiline examples use `\`.
+- PowerShell multiline examples use the backtick `` ` ``.
+- Single-line fallback (works in Bash/zsh and PowerShell):
+```bash
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation --model-path models/foundational_YYYYMMDD_HHMMSS/best_model.pt --tokenizer-path data/tokenizer --max-gen-length 512 --num-samples 100 --batch-size 1
+```
+
+PowerShell multiline example:
+```powershell
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation `
+  --model-path models/foundational_YYYYMMDD_HHMMSS/best_model.pt `
+  --tokenizer-path data/tokenizer `
+  --max-gen-length 512 `
+  --num-samples 100 `
+  --batch-size 1
+```
+
+Placeholder replacement:
+- Replace `YYYYMMDD_HHMMSS` with a real run directory under `models/`.
+- Example resolved path: `models/foundational_20260201_012912_173614/best_model.pt`.
+
 ```bash
 # 1. Generate training corpus (100,000 samples recommended)
 
 # Generate foundational training corpus with 100K samples (plain text)
 # This large corpus provides the base model with extensive arithmetic patterns
-python generate_foundational_plaintext.py \
+poetry run python -m instructor.final_project.arithmetic_llm.generate_foundational_plaintext \
   --num-samples 100000 \
   --max-depth 4 \
   --num-range 1 20 \
@@ -68,16 +93,16 @@ python generate_foundational_plaintext.py \
 
 # Generate mixed instruction corpus (valid + invalid)
 # This creates a balanced dataset without writing intermediate files
-python generate_instruction_corpus_mixed.py \
+poetry run python -m instructor.final_project.arithmetic_llm.generate_instruction_corpus_mixed \
   --num-samples 20000 \
   --max-depth 4 \
   --num-range 1 20 \
   --invalid-rate 0 \
   --output-mixed data/instruction_corpus.txt
 
-# Generate separate test corpus for evaluation (10K samples, minimal errors)
+# Generate separate test corpus for evaluation (1K samples, minimal errors)
 # This provides a clean test set with only 1% invalid expressions
-python generate_corpus.py \
+poetry run python -m instructor.final_project.arithmetic_llm.generate_corpus \
   --instruction-only \
   --num-samples 1000 \
   --max-depth 4 \
@@ -85,25 +110,25 @@ python generate_corpus.py \
   --num-range 1 20 \
   --invalid-rate 0
 
-#check line counts
-python -c "import sys; [print(f'{sum(1 for _ in open(f))} {f}') for f in ['data/foundational_corpus.txt', 'data/instruction_corpus.txt', 'data/instruction_corpus_test.txt']]"
+# check line counts (justified `-c` exception for quick inspection)
+poetry run python -c "import sys; [print(f'{sum(1 for _ in open(f))} {f}') for f in ['data/foundational_corpus.txt', 'data/instruction_corpus.txt', 'data/instruction_corpus_test.txt']]"
 
 # 2. Train tokenizer
-python train_tokenizer.py \
+poetry run python -m instructor.final_project.arithmetic_llm.train_tokenizer \
   --corpus-path data/foundational_corpus.txt \
   --output-dir data/tokenizer \
   --vocab-size 1000
 
 # show tokenizer table
-python print_token_table.py --tokenizer_path data/tokenizer/tokenizer.pkl  > tokens.csv
+poetry run python -m instructor.final_project.arithmetic_llm.print_token_table --tokenizer_path data/tokenizer/tokenizer.pkl  > tokens.csv
 
 # Analyze your instruction corpus
-python check_sequence_lengths.py \
+poetry run python -m instructor.final_project.arithmetic_llm.check_sequence_lengths \
   --corpus-path data/instruction_corpus.txt \
   --tokenizer-path data/tokenizer
 
 # 3. Train foundational model
-python run_foundational_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_foundational_training \
   --corpus-path data/foundational_corpus.txt \
   --output-dir models/ \
   --tokenizer-path data/tokenizer \
@@ -112,7 +137,7 @@ python run_foundational_training.py \
   --batch-size 16
 
 #3.1 Evaluate the foundational model, performance would be bad
-python run_evaluation.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
   --model-path models/foundational_YYYYMMDD_HHMMSS/best_model.pt \
   --tokenizer-path data/tokenizer \
   --max-gen-length 512 \
@@ -121,7 +146,7 @@ python run_evaluation.py \
 
 
 # 4. Fine-tune instruction model
-python run_instruction_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_instruction_training \
   --instruction-corpus-path data/instruction_corpus.txt \
   --output-dir models/ \
   --tokenizer-path data/tokenizer \
@@ -129,7 +154,7 @@ python run_instruction_training.py \
   --num-epochs 10
 
 # 4.1 Evaluate the model
-python run_evaluation.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
   --model-path models/instruction_YYYYMMDD_HHMMSS/best_model.pt \
   --tokenizer-path data/tokenizer \
   --max-gen-length 512 \
@@ -137,7 +162,7 @@ python run_evaluation.py \
   --num-samples 1000
 
 # 5 Fine-tune with LoRA adapters (optional)
-python run_instruction_training_lora.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_instruction_training_lora \
   --instruction-corpus-path data/instruction_corpus.txt \
   --output-dir models/ \
   --tokenizer-path data/tokenizer \
@@ -150,7 +175,7 @@ python run_instruction_training_lora.py \
 
 
 # 5.1 Evaluate the LoRA merged model (optional)
-python run_evaluation.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
   --model-path models/instruction_lora_YYYYMMDD_HHMMSS/merged_model.pt \
   --tokenizer-path data/tokenizer \
   --max-gen-length 512 \
@@ -158,7 +183,7 @@ python run_evaluation.py \
   --num-samples 1000
 
 # 6 GRPO training (optional)
-python run_grpo_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_grpo_training \
   --tokenizer data/tokenizer \
   --sft-checkpoint models/instruction_YYYYMMDD_HHMMSS/best_model.pt \
   --output-dir models/grpo \
@@ -174,10 +199,21 @@ python run_grpo_training.py \
   --kl-penalty-coef 0.05
  
 
-#6.1 eval GRPO model
-python run_evaluation.py   --model-path models/grpo/grpo_YYYYMMMDD_HHMMSS/final_modelpt    --tokenizer-path data/tokenizer   --max-gen-length 512   --batch-size 1   --num-samples 1000
+# 6.1 Evaluate GRPO model
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
+  --model-path models/grpo/grpo_YYYYMMDD_HHMMSS/final_model.pt \
+  --tokenizer-path data/tokenizer \
+  --max-gen-length 512 \
+  --batch-size 1 \
+  --num-samples 1000
 
 ```
+
+### Path and Artifact Rules
+
+- `--model-path`, `--foundational-checkpoint`, and `--sft-checkpoint` expect checkpoint **files** (for example `best_model.pt` or `final_model.pt`), not directories.
+- `--tokenizer-path` expects a tokenizer **directory** (for example `data/tokenizer`).
+- If evaluating a LoRA adapter file (`lora_adapter.pt`), also provide `--base-checkpoint` or merge adapters first.
 
 ## Detailed Usage
 
@@ -187,7 +223,7 @@ Generate training data consisting of arithmetic expressions and their step-by-st
 
 ```bash
 # Foundational corpus (plain text)
-python generate_foundational_plaintext.py \
+poetry run python -m instructor.final_project.arithmetic_llm.generate_foundational_plaintext \
   --num-samples 50000 \
   --max-depth 4 \
   --num-range 1 20 \
@@ -195,7 +231,7 @@ python generate_foundational_plaintext.py \
   --output-txt data/foundational_corpus_plain.txt
 
 # Mixed instruction corpus (valid + invalid)
-python generate_instruction_corpus_mixed.py \
+poetry run python -m instructor.final_project.arithmetic_llm.generate_instruction_corpus_mixed \
   --num-samples 50000 \
   --max-depth 4 \
   --num-range 1 20 \
@@ -221,11 +257,11 @@ For production-quality results, use at least 50,000 samples. The model needs suf
 - `--instruction-only`: Generate only instruction corpus
 
 **Mixed Instruction Corpus Script:**
-- `python generate_instruction_corpus_mixed.py` creates a mixed instruction corpus
+- `poetry run python -m instructor.final_project.arithmetic_llm.generate_instruction_corpus_mixed` creates a mixed instruction corpus
 - `--output-mixed`: Path for the mixed instruction corpus
 
 **Foundational Plain-Text Script:**
-- `python generate_foundational_plaintext.py` generates shuffled plain text directly
+- `poetry run python -m instructor.final_project.arithmetic_llm.generate_foundational_plaintext` generates shuffled plain text directly
 - `--output-txt`: Path to plain-text corpus for training
 
 **Output Format:**
@@ -253,7 +289,7 @@ Final Result: 12
 Train a BPE (Byte Pair Encoding) tokenizer on the arithmetic corpus.
 
 ```bash
-python train_tokenizer.py \
+poetry run python -m instructor.final_project.arithmetic_llm.train_tokenizer \
   --corpus-path data/foundational_corpus_plain.txt \
   --vocab-size 1000 \
   --output-dir data/tokenizer
@@ -277,7 +313,7 @@ python train_tokenizer.py \
 Train the base transformer model on arithmetic expressions.
 
 ```bash
-python run_foundational_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_foundational_training \
   --corpus-path data/foundational_corpus_plain.txt \
   --tokenizer-path data/tokenizer \
   --output-dir models \
@@ -296,7 +332,7 @@ python run_foundational_training.py \
 - `--warmup-steps`: Warmup steps for learning rate (default: 1000)
 - `--gradient-clip`: Gradient clipping value (default: 1.0)
 - `--save-every`: Save checkpoint every N steps (default: 1000)
-- `--device`: Device for training: 'cuda', 'cpu', or 'auto' (default: auto)
+- `--device`: Device for training: 'cuda', 'mps', 'cpu', or 'auto' (default: auto)
 
 **Model Architecture Parameters:**
 - `--d-model`: Embedding dimension (default: 256)
@@ -308,7 +344,7 @@ python run_foundational_training.py \
 **Configuration Files:**
 You can also use JSON configuration files:
 ```bash
-python run_foundational_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_foundational_training \
   --corpus-path data/foundational_corpus_plain.txt \
   --tokenizer-path data/tokenizer \
   --config training_config.json \
@@ -330,7 +366,7 @@ Training creates a timestamped directory containing:
 Fine-tune the foundational model with instruction-formatted data.
 
 ```bash
-python run_instruction_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_instruction_training \
   --instruction-corpus-path data/instruction_corpus.txt \
   --tokenizer-path data/tokenizer \
   --foundational-checkpoint models/foundational_YYYYMMDD_HHMMSS/best_model.pt \
@@ -351,7 +387,7 @@ python run_instruction_training.py \
 - `--warmup-steps`: Warmup steps (default: 500)
 - `--gradient-clip`: Gradient clipping (default: 1.0)
 - `--save-every`: Save checkpoint every N steps (default: 500)
-- `--device`: Device for training (default: auto)
+- `--device`: Device for training: 'cuda', 'mps', 'cpu', or 'auto' (default: auto)
 
 **Note:** Fine-tuning typically uses a lower learning rate and fewer epochs than foundational training.
 
@@ -360,7 +396,7 @@ python run_instruction_training.py \
 Fine-tune with LoRA adapters for parameter-efficient training.
 
 ```bash
-python run_instruction_training_lora.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_instruction_training_lora \
   --instruction-corpus-path data/instruction_corpus.txt \
   --tokenizer-path data/tokenizer \
   --foundational-checkpoint models/foundational_YYYYMMDD_HHMMSS/best_model.pt \
@@ -391,7 +427,7 @@ python run_instruction_training_lora.py \
 Train with Group Relative Policy Optimization (GRPO) using verifiable rewards.
 
 ```bash
-python run_grpo_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_grpo_training \
   --instruction-corpus data/instruction_corpus.txt \
   --tokenizer data/tokenizer \
   --sft-checkpoint models/instruction_YYYYMMDD_HHMMSS/best_model.pt \
@@ -425,7 +461,7 @@ python run_grpo_training.py \
 Evaluate the trained model on a test set of arithmetic expressions.
 
 ```bash
-python run_evaluation.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
   --model-path models/instruction_YYYYMMDD_HHMMSS/best_model.pt \
   --tokenizer-path data/tokenizer \
   --num-samples 1000 \
@@ -435,7 +471,7 @@ python run_evaluation.py \
 
 **LoRA Evaluation (merged model):**
 ```bash
-python run_evaluation.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_evaluation \
   --model-path models/instruction_lora_YYYYMMDD_HHMMSS/merged_model.pt \
   --tokenizer-path data/tokenizer \
   --num-samples 1000 \
@@ -445,7 +481,7 @@ python run_evaluation.py \
 
 If you saved only adapters, merge them into a base checkpoint first:
 ```bash
-python merge_lora_adapter.py \
+poetry run python -m instructor.final_project.arithmetic_llm.merge_lora_adapter \
   --base-checkpoint models/foundational_YYYYMMDD_HHMMSS/best_model.pt \
   --adapter-path models/instruction_lora_YYYYMMDD_HHMMSS/lora_adapter.pt \
   --output-path models/instruction_lora_YYYYMMDD_HHMMSS/merged_model.pt
@@ -481,7 +517,7 @@ Evaluation creates timestamped files:
 Use the trained model interactively to solve arithmetic problems.
 
 ```bash
-python run_interactive.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_interactive \
   --model-path models/instruction_YYYYMMDD_HHMMSS/best_model.pt \
   --tokenizer-path data/tokenizer
 ```
@@ -572,7 +608,7 @@ Create a JSON configuration file for reproducible training:
 
 Use it with:
 ```bash
-python run_foundational_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_foundational_training \
   --corpus-path data/corpus.txt \
   --tokenizer-path data/tokenizer \
   --config training_config.json
@@ -595,7 +631,7 @@ Create a model configuration file:
 
 Use it with:
 ```bash
-python run_foundational_training.py \
+poetry run python -m instructor.final_project.arithmetic_llm.run_foundational_training \
   --corpus-path data/corpus.txt \
   --tokenizer-path data/tokenizer \
   --model-config model_config.json
@@ -607,12 +643,36 @@ To resume training from a checkpoint, use the checkpoint as the starting point f
 
 ### Distributed Training
 
-For multi-GPU training, modify the training scripts to use PyTorch's DistributedDataParallel. This is not currently implemented but can be added by wrapping the model with DDP.
+Current behavior:
+- `--device auto` selects `cuda` first, then `mps`, then `cpu`.
+- Training and evaluation run on a single selected device only (no built-in multi-GPU parallelism).
+
+DDP extension map (files/modules to modify):
+- Entry points: `instructor/final_project/arithmetic_llm/run_foundational_training.py`, `instructor/final_project/arithmetic_llm/run_instruction_training.py`, `instructor/final_project/arithmetic_llm/run_instruction_training_lora.py`, `instructor/final_project/arithmetic_llm/run_grpo_training.py`.
+- Training loops: `instructor/final_project/arithmetic_llm/train_foundational.py`, `instructor/final_project/arithmetic_llm/train_instruction.py`, `instructor/final_project/arithmetic_llm/train_instruction_lora.py`, `instructor/final_project/arithmetic_llm/grpo_trainer.py`.
+- Sampler/dataloader wiring: `instructor/final_project/arithmetic_llm/data_loader.py` (use distributed samplers and rank-aware shuffling).
+- Checkpointing and resume: `instructor/final_project/arithmetic_llm/train_foundational.py` (`save_checkpoint` / `load_checkpoint`), `instructor/final_project/arithmetic_llm/grpo_trainer.py` (`save_checkpoint` / `load_checkpoint`), plus resume handling in instruction training scripts.
+
+### Runtime Compatibility
+
+| Component | Verified/Expected | Notes |
+|---|---|---|
+| Python | 3.10+ | Project is managed with Poetry (`python = "^3.10"`). |
+| PyTorch | 2.7.1 (from lockfile) | Use Poetry-managed environment to avoid wheel mismatch. |
+| CUDA | Match your installed torch build | If CUDA runtime does not match, use CPU/MPS fallback or reinstall a compatible torch wheel. |
+| GPU architecture | CUDA, Apple MPS, CPU supported by code path | `--device auto` falls back to MPS/CPU when CUDA is unavailable. |
+
+Known issue (Blackwell / RTX 50-series):
+- The current locked torch build does not support Blackwell GPUs.
+- Mitigations:
+  1. Install a torch build that explicitly supports your CUDA/driver stack for Blackwell.
+  2. Run with `--device cpu` (or `--device mps` on Apple Silicon) until a compatible CUDA wheel is installed.
+  3. Use a known-compatible cloud GPU/runtime for training if local compatibility is blocked.
 
 ## Performance Tips
 
 1. **Use GPU**: Training on GPU is 10-100x faster than CPU
-2. **Batch Size**: Larger batches (32-64) train faster but use more memory
+2. **Batch Size**: Larger batches train faster but use more memory
 3. **Corpus Size**: More data (50K-100K samples) improves accuracy
 4. **Model Size**: Larger models (d_model=512, num_layers=8) are more accurate but slower
 5. **Checkpointing**: Save checkpoints frequently to avoid losing progress

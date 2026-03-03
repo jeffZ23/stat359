@@ -2,6 +2,14 @@
 
 This folder contains code for training, using, and instruction-tuning a transformer-based language model on the TinyStories dataset, including a custom BPE tokenizer and chat interface.
 
+Run commands from the repository root (`stat359/`) using:
+- `poetry run python instructor/final_project/tinystories_llm/<script>.py`
+- This subproject intentionally uses script entry points because several files rely on local imports (for example `from bpe_tokenizer import ...`).
+
+Path semantics:
+- `--model_path` and `--pretrained_model_path` expect checkpoint files (`*.pth`), not directories.
+- `--output_dir` expects a directory path.
+
 ## File Overview
 
 ### 1. `bpe_tokenizer.py`
@@ -12,7 +20,7 @@ Script to train the BPE tokenizer on the HuggingFace TinyStories dataset. Suppor
 
 **Usage:**
 ```bash
-python train_bpe_tokenizer_hf.py --sample 10000
+poetry run python instructor/final_project/tinystories_llm/train_bpe_tokenizer_hf.py --sample 10000
 ```
 
 ### 3. `transformer_model.py`
@@ -23,7 +31,7 @@ Trains a transformer language model on the TinyStories dataset using the custom 
 
 **Usage:**
 ```bash
-python train_tinystories_model.py --dataset roneneldan/TinyStories --output_dir tinystories_model
+poetry run python instructor/final_project/tinystories_llm/train_tinystories_model.py --dataset roneneldan/TinyStories --output_dir tinystories_model
 ```
 
 ### 5. `train_tinystories_chat_model.py`
@@ -31,7 +39,7 @@ Instruction-tunes a pretrained TinyStories model for chat using a conversational
 
 **Usage:**
 ```bash
-python train_tinystories_chat_model.py --pretrained_model_path tinystories_model/best_model.pth --output_dir tinystories_chat_model
+poetry run python instructor/final_project/tinystories_llm/train_tinystories_chat_model.py --pretrained_model_path tinystories_model/best_model.pth --output_dir tinystories_chat_model
 ```
 
 ### 6. `generate_tinystories_text.py`
@@ -39,7 +47,7 @@ Generates text from a trained TinyStories model given a prompt. Supports tempera
 
 **Usage:**
 ```bash
-python generate_tinystories_text.py --model_path tinystories_model/best_model.pth --prompt "Once upon a time,"
+poetry run python instructor/final_project/tinystories_llm/generate_tinystories_text.py --model_path tinystories_model/best_model.pth --prompt "Once upon a time,"
 ```
 
 ### 7. `chat_with_tinystories_model.py`
@@ -47,7 +55,7 @@ Interactive chat interface for a TinyStories chat model. Loads a trained model a
 
 **Usage:**
 ```bash
-python chat_with_tinystories_model.py --model_path tinystories_chat_model/final_model.pth
+poetry run python instructor/final_project/tinystories_llm/chat_with_tinystories_model.py --model_path tinystories_chat_model/final_model.pth
 ```
 
 ---

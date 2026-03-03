@@ -45,12 +45,15 @@ Training a foundation model is a non-trivial task. Even though we have restricte
    poetry install
    ```
    This will create a virtual environment and install all required packages for the project.
+3. Run TinyStories commands from the repository root using script entry points:
+   - `poetry run python instructor/final_project/tinystories_llm/<script>.py`
+   - This is a documented exception to module execution because these scripts currently use local imports (for example `from bpe_tokenizer import ...`).
 
 ### Step 1: Train the Tokenizer
 
 Use the provided script to train a tokenizer:
 ```bash
-python train_bpe_tokenizer_hf.py
+poetry run python instructor/final_project/tinystories_llm/train_bpe_tokenizer_hf.py
 ```
 
 **What this script does:**
@@ -68,13 +71,13 @@ python train_bpe_tokenizer_hf.py
 
 Train your model using:
 ```bash
-python train_tinystories_model.py
+poetry run python instructor/final_project/tinystories_llm/train_tinystories_model.py
 ```
 - Save the output logs for later analysis.
 - You may adjust training parameters for faster testing or better results.
 - Use the `--amp` option to enable half-precision (float16) training for improved speed:
   ```bash
-  python train_tinystories_model.py --amp
+  poetry run python instructor/final_project/tinystories_llm/train_tinystories_model.py --amp
   ```
 
 **What this script does:**
@@ -104,7 +107,7 @@ python train_tinystories_model.py
 
 Generate text with your trained model:
 ```bash
-python generate_tinystories_text.py
+poetry run python instructor/final_project/tinystories_llm/generate_tinystories_text.py
 ```
 - Evaluate whether the generated text is meaningful.
 
@@ -112,7 +115,7 @@ python generate_tinystories_text.py
 
 Fine-tune your model for conversational abilities:
 ```bash
-python train_tinystories_chat_model.py --pretrained_model_path <path_to_foundation_model>
+poetry run python instructor/final_project/tinystories_llm/train_tinystories_chat_model.py --pretrained_model_path tinystories_model/best_model.pth
 ```
 
 **What this script does:**
@@ -136,6 +139,6 @@ python train_tinystories_chat_model.py --pretrained_model_path <path_to_foundati
 
 Interact with your instruction-tuned model:
 ```bash
-python chat_with_tinystories_model.py
+poetry run python instructor/final_project/tinystories_llm/chat_with_tinystories_model.py --model_path tinystories_chat_model/final_model.pth
 ```
 
